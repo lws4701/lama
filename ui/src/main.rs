@@ -2,7 +2,7 @@ use gtk4::prelude::*;
 use gtk4::{glib, Application, ApplicationWindow};
 use emulator::cpu::CPUProcessor;
 
-const APP_ID: &str = "com.lewissmith.lama";
+const APP_ID: &str = "xyz.lewissmith.lama";
 
 fn main() -> glib::ExitCode {
     let app = Application::builder().application_id(APP_ID).build();
