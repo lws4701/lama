@@ -1,5 +1,6 @@
 use std::vec::Vec;
 use std::fmt::Display;
+use std::num::ParseIntError;
 
 pub struct CPURegister {
     name: String,
@@ -32,11 +33,11 @@ impl CPURegister {
         self.value
     }
 
-    pub fn get_32bit_value(&self) -> u32 {
-        (self.value << 32) as u32
+    pub fn get_32bit_value(&self) -> u64 {
+        self.value << 32
     }
-    pub fn set_32bit_value(&mut self, value: u32) {
-        self.value = (value as u64) >> 32
+    pub fn set_32bit_value(&mut self, value: u64) {
+        self.value = value >> 32
     }
 
     pub fn reset_register(&mut self) {
@@ -46,7 +47,6 @@ impl CPURegister {
 
 impl CPUProcessor {
     pub fn new(name: String, number: u32) -> CPUProcessor {
-        use std::collections::HashMap;
         let mut processor: CPUProcessor = CPUProcessor {
             name,
             number,
@@ -140,6 +140,33 @@ impl CPUProcessor {
         processor.registers.insert(processor.registers.len(),
                                    CPURegister::new(String::from("PC"), 33, 0, 0));
         processor
+    }
+
+    fn read_register_from_name(&self, register_name: String) -> Result<u64, ParseIntError> {
+        let is_32bit_view: bool = register_name.contains("W");
+        if register_name.contains("ZR") {
+            Ok(self.read_register_from_number(31, is_32bit_view))
+        } else if register_name.contains("SP") {
+            Ok(self.read_register_from_number(32, is_32bit_view))
+        } else if register_name.contains("PC") {
+            Ok(self.read_register_from_number(33, is_32bit_view))
+        } else {
+            // This is a general-purpose register
+            return match register_name
+                .replace(&['W', 'Z', 'X'][..], "")
+                .parse() {
+                Ok(register_number) => Ok(self.read_register_from_number(register_number, is_32bit_view)),
+                Err(e) => Err(e)
+            };
+        }
+    }
+
+    pub fn read_register_from_number(&self, register_number: u32, is_32bit_view: bool) -> u64 {
+        if is_32bit_view {
+            self.registers.get(register_number as usize).unwrap().get_32bit_value()
+        } else {
+            self.registers.get(register_number as usize).unwrap().get_value()
+        }
     }
 }
 impl Display for CPURegister {
