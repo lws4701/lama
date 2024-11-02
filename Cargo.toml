@@ -1,0 +1,13 @@
+[package]
+name = "lama"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+
+[workspace]
+members = [ "emulator","ui"]
+
+[[bin]]
+name = "lama"
+path = "ui/src/main.rs"
